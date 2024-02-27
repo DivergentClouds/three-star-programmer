@@ -63,8 +63,6 @@ fn interpret(
     initial_memory: ?std.AutoHashMap(usize, usize),
     allocator: std.mem.Allocator,
 ) !void {
-    const stdout = std.io.getStdOut().writer();
-
     var memory = if (initial_memory) |initial|
         initial
     else
@@ -81,7 +79,7 @@ fn interpret(
 
     while (code_reader.readByte() catch next: {
         // loop if end of file is reached
-        try code_file.seekTo(0);
+        try finishCycle(code_file, memory);
 
         // if file is empty break with null
         break :next code_reader.readByte() catch null;
@@ -109,14 +107,23 @@ fn interpret(
         } else if (byte >= '0' and byte <= '9') {
             try string_list.append(byte);
         } else {
-            try code_file.seekTo(0);
-
-            if ((memory.get(1) orelse 0) % 2 == 1) {
-                try stdout.writeByte(
-                    @as(u8, @truncate(memory.get(3) orelse 0)),
-                );
-            }
+            try finishCycle(code_file, memory);
         }
+    }
+}
+
+fn finishCycle(
+    code_file: std.fs.File,
+    memory: std.AutoHashMap(usize, usize),
+) !void {
+    const stdout = std.io.getStdOut().writer();
+
+    try code_file.seekTo(0);
+
+    if ((memory.get(1) orelse 0) % 2 == 1) {
+        try stdout.writeByte(
+            @as(u8, @truncate(memory.get(3) orelse 0)),
+        );
     }
 }
 

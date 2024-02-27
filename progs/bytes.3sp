@@ -1,6 +1,3 @@
 0 1 2
 
-Loop forever outputting all ASCII charactefs in order, 3 copies of each
-character (except for the first pass, when the first few are output one
-or two times).
-
+Output all bytes counting up from 0, looping forever. 
